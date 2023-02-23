@@ -40,6 +40,10 @@ resource "digitalocean_droplet" "tien-terraform" {
     # SET MAX SESSION FOR SSH VPS
     echo "MaxSessions 50" >> /etc/ssh/sshd_config
 
+    # INSTALL GIT
+    sudo apt-get update
+    sudo apt-get install git
+
   EOF
 }
 
