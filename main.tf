@@ -43,6 +43,9 @@ resource "digitalocean_droplet" "tien-terraform" {
     # INSTALL GIT
     sudo apt-get update
     sudo apt-get install git
+    git clone https://Tiensp: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@github.com/Tiensp/tien-terraform.git
+    cd tien-terraform
+    docker-compose up -d
 
   EOF
 }
