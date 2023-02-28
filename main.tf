@@ -52,6 +52,19 @@ resource "digitalocean_droplet" "tien-terraform" {
     cd tien-terraform
     docker-compose up -d
 
+    # INSTALL NGINX
+    sudo apt-get install -y nginx
+
+    # COPY NGINX CONFIGURATION FILE
+    sudo cp ./nginx.conf /etc/nginx/sites-available/tien-kafka
+    sudo ln -s /etc/nginx/sites-available/tien-kafka /etc/nginx/sites-enabled/
+
+    # RESTART NGINX
+    sudo systemctl restart nginx
+
+    # START DOCKER COMPOSE
+    docker-compose up -d
+
   EOF
 }
 
