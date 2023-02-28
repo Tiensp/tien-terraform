@@ -8,11 +8,11 @@ terraform {
 }
 
 resource "digitalocean_droplet" "tien-terraform" {
-  image    = "ubuntu-18-04-x64"
-  name     = "tien-kafka"
-  region   = "sgp1"
-  size     = "s-1vcpu-1gb"
-  ssh_keys = [digitalocean_ssh_key.default-ssh.fingerprint]
+  image     = "ubuntu-18-04-x64"
+  name      = "tien-kafka"
+  region    = "sgp1"
+  size      = "s-1vcpu-1gb"
+  ssh_keys  = [digitalocean_ssh_key.default-ssh.fingerprint]
   user_data = <<-EOF
 		#!/bin/bash
     # CREATE SWAP
@@ -23,8 +23,12 @@ resource "digitalocean_droplet" "tien-terraform" {
     sudo cat /etc/fstab >> /swapfile swap swap defaults 0 0
 
     # INSTALL DOCKER
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
+    sudo apt-get update
+    sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
     # ADD DOCKER USER AS ROOT USER
     sudo groupadd docker
@@ -38,7 +42,8 @@ resource "digitalocean_droplet" "tien-terraform" {
     sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
     # SET MAX SESSION FOR SSH VPS
-    echo "MaxSessions 50" >> /etc/ssh/sshd_config
+    echo "MaxSessions 50" | sudo tee -a /etc/ssh/sshd_config > /dev/null
+    sudo systemctl restart sshd
 
     # INSTALL GIT
     sudo apt-get update
