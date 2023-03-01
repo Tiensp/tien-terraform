@@ -45,13 +45,6 @@ resource "digitalocean_droplet" "tien-terraform" {
     echo "MaxSessions 50" | sudo tee -a /etc/ssh/sshd_config > /dev/null
     sudo systemctl restart sshd
 
-    # INSTALL GIT
-    sudo apt-get update
-    sudo apt-get install git
-    git clone https://Tiensp:"${var.github_token}"@github.com/Tiensp/tien-terraform.git
-    cd tien-terraform
-    docker-compose up -d
-
     # INSTALL NGINX
     sudo apt-get install -y nginx
 
@@ -61,6 +54,12 @@ resource "digitalocean_droplet" "tien-terraform" {
 
     # RESTART NGINX
     sudo systemctl restart nginx
+
+    # INSTALL GIT
+    sudo apt-get update
+    sudo apt-get install git
+    git clone https://Tiensp:"${var.github_token}"@github.com/Tiensp/tien-terraform.git
+    cd tien-terraform
 
     # START DOCKER COMPOSE
     docker-compose up -d
