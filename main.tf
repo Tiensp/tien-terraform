@@ -49,7 +49,7 @@ resource "digitalocean_droplet" "tien-terraform" {
     sudo apt-get install -y nginx
 
     # COPY NGINX CONFIGURATION FILE
-    sudo cp ./nginx.conf /etc/nginx/sites-available/tien-kafka
+    sudo cp ./etc/nginx/nginx.conf /etc/nginx/sites-available/tien-kafka
     sudo ln -s /etc/nginx/sites-available/tien-kafka /etc/nginx/sites-enabled/
 
     # RESTART NGINX
@@ -66,7 +66,6 @@ resource "digitalocean_droplet" "tien-terraform" {
 
   EOF
 }
-
 resource "digitalocean_ssh_key" "default-ssh" {
   name       = "tien-ssh-1"
   public_key = file(".ssh/id_rsa.pub")
