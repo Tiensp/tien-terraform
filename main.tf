@@ -7,15 +7,6 @@ terraform {
   }
 }
 
-data "digitalocean_droplet" "tien-terraform" {
-  name = "tien-kafka"
-}
-
-# Lưu trữ địa chỉ IP của máy chủ vào một biến
-locals {
-  server_ip = data.digitalocean_droplet.tien-terraform.ipv4_address
-}
-
 resource "digitalocean_droplet" "tien-terraform" {
   image     = "ubuntu-18-04-x64"
   name      = "tien-kafka"
@@ -100,6 +91,15 @@ resource "digitalocean_droplet" "tien-terraform" {
     sudo systemctl start netfilter-persistent
 
   EOF
+}
+
+data "digitalocean_droplet" "tien-terraform" {
+  name = "tien-kafka"
+}
+
+# Lưu trữ địa chỉ IP của máy chủ vào một biến
+locals {
+  server_ip = data.digitalocean_droplet.tien-terraform.ipv4_address
 }
 resource "digitalocean_ssh_key" "default-ssh" {
   name       = "tien-ssh-1"
