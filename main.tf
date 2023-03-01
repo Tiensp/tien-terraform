@@ -45,16 +45,6 @@ resource "digitalocean_droplet" "tien-terraform" {
     echo "MaxSessions 50" | sudo tee -a /etc/ssh/sshd_config > /dev/null
     sudo systemctl restart sshd
 
-    # INSTALL NGINX
-    sudo apt-get install -y nginx
-
-    # COPY NGINX CONFIGURATION FILE
-    sudo cp ./etc/nginx/nginx.conf /etc/nginx/sites-available/tien-kafka
-    sudo ln -s /etc/nginx/sites-available/tien-kafka /etc/nginx/sites-enabled/
-
-    # RESTART NGINX
-    sudo systemctl restart nginx
-
     # INSTALL GIT
     sudo apt-get update
     sudo apt-get install git
@@ -63,6 +53,42 @@ resource "digitalocean_droplet" "tien-terraform" {
 
     # START DOCKER COMPOSE
     docker-compose up -d
+
+    # INSTALL NGINX
+    sudo apt-get install -y nginx
+
+    # CONFIGURE NGINX
+    sudo tee /etc/nginx/sites-available/default << EOT
+      server {
+          listen 80 default_server;
+          listen [::]:80 default_server;
+          server_name _;
+          location / {
+              proxy_pass http://${digitalocean_droplet.tien-terraform.ipv4_address}:8080;
+              proxy_set_header Host \$host;
+              proxy_set_header X-Real-IP \$remote_addr;
+              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+          }
+      }
+    EOT
+
+    # RESTART NGINX
+    sudo systemctl restart nginx
+
+    # CONFIGURE FIREWALL
+    sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+    sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+    sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    sudo iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT
+    sudo iptables -A INPUT -j DROP
+
+    # SAVE FIREWALL RULES
+    sudo sh -c "iptables-save > /etc/iptables.rules"
+
+    # ENABLE FIREWALL AT BOOT TIME
+    sudo apt-get install -y iptables-persistent
+    sudo systemctl enable netfilter-persistent
+    sudo systemctl start netfilter-persistent
 
   EOF
 }
@@ -74,3 +100,5 @@ resource "digitalocean_ssh_key" "default-ssh" {
 provider "digitalocean" {
   token = var.do_token
 }
+
+
