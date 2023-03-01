@@ -7,6 +7,15 @@ terraform {
   }
 }
 
+data "digitalocean_droplet" "tien-terraform" {
+  name = "tien-kafka"
+}
+
+# Lưu trữ địa chỉ IP của máy chủ vào một biến
+locals {
+  server_ip = data.digitalocean_droplet.tien-terraform.ipv4_address
+}
+
 resource "digitalocean_droplet" "tien-terraform" {
   image     = "ubuntu-18-04-x64"
   name      = "tien-kafka"
@@ -64,7 +73,7 @@ resource "digitalocean_droplet" "tien-terraform" {
           listen [::]:80 default_server;
           server_name _;
           location / {
-              proxy_pass http://${digitalocean_droplet.tien-terraform.ipv4_address}:8080;
+              proxy_pass http://${local.server_ip}:8080;
               proxy_set_header Host \$host;
               proxy_set_header X-Real-IP \$remote_addr;
               proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
