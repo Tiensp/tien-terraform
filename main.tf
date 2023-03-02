@@ -64,7 +64,7 @@ resource "digitalocean_droplet" "tien-terraform" {
           listen [::]:80 default_server;
           server_name _;
           location / {
-              proxy_pass http://${locals.server_ip}:8080;
+              proxy_pass http://${var.server_ip}:8080;
               proxy_set_header Host \$host;
               proxy_set_header X-Real-IP \$remote_addr;
               proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -91,15 +91,6 @@ resource "digitalocean_droplet" "tien-terraform" {
     # sudo systemctl start netfilter-persistent
 
   EOF
-}
-
-data "digitalocean_droplet" "tien-terraform" {
-  name = "tien-kafka"
-}
-
-# Lưu trữ địa chỉ IP của máy chủ vào một biến
-locals {
-  server_ip = data.digitalocean_droplet.tien-terraform.ipv4_address
 }
 resource "digitalocean_ssh_key" "default-ssh" {
   name       = "tien-ssh-1"
