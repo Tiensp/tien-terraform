@@ -18,6 +18,7 @@ services:
       - "9092:9092"
       - "29092:29092"
       - "19092:19092"
+      - "18888:18888"
     depends_on:
       - zookeeper
     environment:

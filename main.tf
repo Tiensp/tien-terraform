@@ -34,6 +34,26 @@ resource "digitalocean_droplet" "tien-terraform" {
     sudo chmod +x /usr/local/bin/docker-compose
     sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
+    # INSTALL NGINX
+    sudo apt-get install -y nginx
+
+    # CONFIGURE NGINX
+    sudo tee /etc/nginx/sites-available/kafka <<EOF2
+    server {
+        listen 80;
+
+        location / {
+            proxy_pass http://localhost:18888;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade \$http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+    }
+    EOF2
+
+    sudo ln -s /etc/nginx/sites-available/kafka /etc/nginx/sites-enabled/
+    sudo rm /etc/nginx/sites-enabled/default
+
     # SET MAX SESSION FOR SSH VPS
     echo "MaxSessions 50" | sudo tee -a /etc/ssh/sshd_config > /dev/null
     sudo systemctl restart sshd
@@ -46,25 +66,6 @@ resource "digitalocean_droplet" "tien-terraform" {
 
     # START DOCKER COMPOSE
     docker-compose up -d
-
-    # INSTALL NGINX
-    sudo apt-get install -y nginx
-
-    # CONFIGURE NGINX FOR KAFKA
-    cat > /etc/nginx/conf.d/kafka.conf << EOT
-    server {
-        listen 80;
-        server_name kafka.example.com;
-
-        location / {
-            proxy_pass http://127.0.0.1:9092;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade \$http_upgrade;
-            proxy_set_header Connection "upgrade";
-            proxy_set_header Host \$host;
-        }
-    }
-    EOT
 
     # RESTART NGINX
     sudo systemctl restart nginx
