@@ -15,13 +15,6 @@ resource "digitalocean_droplet" "tien-terraform" {
   ssh_keys  = [digitalocean_ssh_key.default-ssh.fingerprint]
   user_data = <<-EOF
 		#!/bin/bash
-    # CREATE SWAP
-    sudo fallocate -l 4G /swapfile
-    sudo chmod 600 /swapfile
-    sudo mkswap /swapfile
-    sudo swapon /swapfile
-    sudo cat /etc/fstab >> /swapfile swap swap defaults 0 0
-
     # INSTALL DOCKER
     sudo apt-get update
     sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
@@ -57,38 +50,24 @@ resource "digitalocean_droplet" "tien-terraform" {
     # INSTALL NGINX
     sudo apt-get install -y nginx
 
-    # CONFIGURE NGINX
-    sudo tee /etc/nginx/sites-available/default << EOT
-      server {
-          listen 80 default_server;
-          listen [::]:80 default_server;
-          server_name _;
-          location / {
-              proxy_pass http://${var.server_ip}:8080;
-              proxy_set_header Host \$host;
-              proxy_set_header X-Real-IP \$remote_addr;
-              proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-          }
-      }
-    EOT
+    # CONFIGURE NGINX FOR KAFKA
+    cat > /etc/nginx/conf.d/kafka.conf << EOF_NGINX
+    server {
+        listen 80;
+        server_name kafka.example.com;
+
+        location / {
+            proxy_pass http://127.0.0.1:9092;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade \$http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host \$host;
+        }
+    }
+    EOF_NGINX
 
     # RESTART NGINX
     sudo systemctl restart nginx
-
-    # # CONFIGURE FIREWALL
-    # sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-    # sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-    # sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-    # sudo iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT
-    # sudo iptables -A INPUT -j DROP
-
-    # # SAVE FIREWALL RULES
-    # sudo sh -c "iptables-save > /etc/iptables.rules"
-
-    # # ENABLE FIREWALL AT BOOT TIME
-    # sudo apt-get install -y iptables-persistent
-    # sudo systemctl enable netfilter-persistent
-    # sudo systemctl start netfilter-persistent
 
   EOF
 }
