@@ -51,7 +51,7 @@ resource "digitalocean_droplet" "tien-terraform" {
     sudo apt-get install -y nginx
 
     # CONFIGURE NGINX FOR KAFKA
-    cat > /etc/nginx/conf.d/kafka.conf << EOF_NGINX
+    cat > /etc/nginx/conf.d/kafka.conf << EOT
     server {
         listen 80;
         server_name kafka.example.com;
@@ -64,7 +64,7 @@ resource "digitalocean_droplet" "tien-terraform" {
             proxy_set_header Host \$host;
         }
     }
-    EOF_NGINX
+    EOT
 
     # RESTART NGINX
     sudo systemctl restart nginx
