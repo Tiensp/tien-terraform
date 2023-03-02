@@ -48,32 +48,6 @@ services:
     networks:
       - kafka-network
 
-  # app:
-  #   image: 'jc21/nginx-proxy-manager:latest'
-  #   restart: unless-stopped
-  #   ports:
-  #     - '80:80'
-  #     - '81:81'
-  #     - '443:443'
-  #   volumes:
-  #     - ./data:/data
-  #     - ./letsencrypt:/etc/letsencrypt
-  #   networks:
-  #     - kafka-network
-
-  nginx:
-    image: nginx
-    container_name: nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - kafka-ui
-    networks:
-      - kafka-network
-
 networks:
   kafka-network:
     driver: bridge

@@ -64,7 +64,7 @@ resource "digitalocean_droplet" "tien-terraform" {
           listen [::]:80 default_server;
           server_name _;
           location / {
-              proxy_pass http://${local.server_ip}:8080;
+              proxy_pass http://${locals.server_ip}:8080;
               proxy_set_header Host \$host;
               proxy_set_header X-Real-IP \$remote_addr;
               proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -75,20 +75,20 @@ resource "digitalocean_droplet" "tien-terraform" {
     # RESTART NGINX
     sudo systemctl restart nginx
 
-    # CONFIGURE FIREWALL
-    sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-    sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-    sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-    sudo iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT
-    sudo iptables -A INPUT -j DROP
+    # # CONFIGURE FIREWALL
+    # sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+    # sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+    # sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    # sudo iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED -j ACCEPT
+    # sudo iptables -A INPUT -j DROP
 
-    # SAVE FIREWALL RULES
-    sudo sh -c "iptables-save > /etc/iptables.rules"
+    # # SAVE FIREWALL RULES
+    # sudo sh -c "iptables-save > /etc/iptables.rules"
 
-    # ENABLE FIREWALL AT BOOT TIME
-    sudo apt-get install -y iptables-persistent
-    sudo systemctl enable netfilter-persistent
-    sudo systemctl start netfilter-persistent
+    # # ENABLE FIREWALL AT BOOT TIME
+    # sudo apt-get install -y iptables-persistent
+    # sudo systemctl enable netfilter-persistent
+    # sudo systemctl start netfilter-persistent
 
   EOF
 }
